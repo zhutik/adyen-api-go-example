@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
     <style>
      /*
       * Base structure
@@ -160,7 +161,7 @@
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
-          <div class="tab-content col-md-6 col-md-offset-1">
+          <div class="tab-content col-md-6">
             <div role="tabpanel" class="tab-pane fade in active" id="autorize">
               <h2>Adyen Perform Authorise</h2>
               <br />
@@ -256,6 +257,12 @@
               </form>
             </div>
           </div>
+
+          <div class="tab-content col-md-5 col-md-offset-1">
+            <h2>Response:</h2>
+            <pre class="hide" id="code-response"><code class="js"></code></pre>
+          </div>
+
         </div>
       </div>
     </div>
@@ -272,6 +279,8 @@
       integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
       crossorigin="anonymous">
     </script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
     <script type="text/javascript" src="{{ .EncURL }}"></script>
     <script type="text/javascript">
         // The form element to encrypt.
@@ -282,6 +291,20 @@
         // Create the form.
         // Note that the method is on the Adyen object, not the adyen.encrypt object.
         adyen.createEncryptedForm( form, options);
+
+        $(document).ready(function() {
+            var responseArea = $('#code-response code');
+            hljs.configure({useBR: true});
+
+            $('#adyen-cancel-form').ajaxForm(function(response) {
+                responseArea.html(JSON.stringify(response));
+                responseArea.parent().removeClass('hide');
+                responseArea.each(function(i, block) {
+                    hljs.highlightBlock(block);
+                });
+            });
+        });
+
     </script>
   </body>
 </html>
