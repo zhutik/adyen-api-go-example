@@ -120,11 +120,15 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 
 	g, err := instance.Modification().Capture(req)
 
-	if err == nil {
-		fmt.Fprintf(w, "<h1>Success!</h1><code><pre>"+g.PspReference+" "+g.Response+"</pre></code>")
-	} else {
-		fmt.Fprintf(w, "<h1>Something went wrong: "+err.Error()+"</h1>")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	response, err := json.Marshal(g)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
 }
 
 func performCancel(w http.ResponseWriter, r *http.Request) {
@@ -153,11 +157,6 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, err := json.Marshal(g)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)

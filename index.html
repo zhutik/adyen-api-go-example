@@ -152,7 +152,6 @@
             <li role="presentation" class="active"><a role="tab" data-toggle="tab" aria-controls="autorize" href="#autorize">Authorize</a></li>
             <li role="presentation"><a role="tab" data-toggle="tab" aria-controls="capture" href="#capture">Capture</a></li>
             <li role="presentation"><a role="tab" data-toggle="tab" aria-controls="cancel" href="#cancel">Cancel</a></li>
-            <li role="presentation"><a role="tab" data-toggle="tab" aria-controls="refund" href="#refund">Refund</a></li>
           </ul>
 
           <ul class="nav nav-sidebar">
@@ -297,6 +296,14 @@
             hljs.configure({useBR: true});
 
             $('#adyen-cancel-form').ajaxForm(function(response) {
+                responseArea.html(JSON.stringify(response));
+                responseArea.parent().removeClass('hide');
+                responseArea.each(function(i, block) {
+                    hljs.highlightBlock(block);
+                });
+            });
+
+            $('#adyen-capture-form').ajaxForm(function(response) {
                 responseArea.html(JSON.stringify(response));
                 responseArea.parent().removeClass('hide');
                 responseArea.each(function(i, block) {
