@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -49,14 +50,19 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 		os.Getenv("ADYEN_ACCOUNT"),
 	)
 	now := time.Now()
+	cwd, _ := os.Getwd()
 
 	config := TempateConfig{
 		EncURL: instance.ClientURL(),
 		Time:   now.Format(time.RFC3339),
 	}
 
-	t := template.Must(template.ParseFiles("index.html"))
-	t.Execute(w, config)
+	t := template.Must(template.ParseGlob(filepath.Join(cwd, "./templates/*")))
+	err := t.ExecuteTemplate(w, "indexPage", config)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 /**
@@ -76,20 +82,49 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	req := &adyen.Authorise{
-		Amount:          &adyen.Amount{Value: 1000, Currency: instance.Currency},
-		MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
-		AdditionalData:  &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
-		Reference:       "DE-100" + randomString(6), // order number or some bussiness reference
-	}
+	var g *adyen.AuthoriseResponse
+	var err error
 
-	g, err := instance.Payment().Authorise(req)
+	// Form was submited with encrypted data
+	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
+		req := &adyen.AuthoriseEncrypted{
+			Amount:          &adyen.Amount{Value: 1000, Currency: instance.Currency},
+			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
+			AdditionalData:  &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
+			Reference:       "DE-100" + randomString(6), // order number or some bussiness reference
+		}
 
-	if err == nil {
-		fmt.Fprintf(w, "<h1>Success!</h1><code><pre>"+g.AuthCode+" "+g.PspReference+"</pre></code>")
+		g, err = instance.Payment().AuthoriseEncrypted(req)
 	} else {
-		fmt.Fprintf(w, "<h1>Something went wrong: "+err.Error()+"</h1>")
+		month, _ := strconv.Atoi(r.Form.Get("expiryMonth"))
+		year, _ := strconv.Atoi(r.Form.Get("expiryYear"))
+		cvc, _ := strconv.Atoi(r.Form.Get("cvc"))
+
+		req := &adyen.Authorise{
+			Card: &adyen.Card{
+				Number:      r.Form.Get("number"),
+				ExpireMonth: month,
+				ExpireYear:  year,
+				HolderName:  r.Form.Get("holderName"),
+				Cvc:         cvc,
+			},
+			Amount:          &adyen.Amount{Value: 1000, Currency: instance.Currency},
+			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
+			Reference:       "DE-100" + randomString(6), // order number or some bussiness reference
+		}
+
+		g, err = instance.Payment().Authorise(req)
 	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(g)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
 }
 
 func performCapture(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +198,8 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fmt.Println("Start listening connections on port 8080...")
+
 	http.HandleFunc("/", showForm)
 	http.HandleFunc("/perform_payment", performPayment)
 	http.HandleFunc("/perform_capture", performCapture)

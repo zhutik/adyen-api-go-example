@@ -1,0 +1,251 @@
+{{define "indexPage"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Adyen Go Api Playground</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <style>
+     /*
+      * Base structure
+      */
+
+      /* Move down content because we have a fixed navbar that is 50px tall */
+      body {
+      padding-top: 50px;
+      }
+
+
+      /*
+      * Global add-ons
+      */
+
+      .sub-header {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      }
+
+      /*
+      * Top navigation
+      * Hide default border to remove 1px line.
+      */
+      .navbar-fixed-top {
+      border: 0;
+      }
+
+      /*
+      * Sidebar
+      */
+
+      /* Hide for mobile, show later */
+      .sidebar {
+      display: none;
+      }
+      @media (min-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 51px;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        display: block;
+        padding: 20px;
+        overflow-x: hidden;
+        overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+        background-color: #f5f5f5;
+        border-right: 1px solid #eee;
+      }
+      }
+
+      /* Sidebar navigation */
+      .nav-sidebar {
+      margin-right: -21px; /* 20px padding + 1px border */
+      margin-bottom: 20px;
+      margin-left: -20px;
+      }
+      .nav-sidebar > li > a {
+      padding-right: 20px;
+      padding-left: 20px;
+      }
+      .nav-sidebar > .active > a,
+      .nav-sidebar > .active > a:hover,
+      .nav-sidebar > .active > a:focus {
+      color: #fff;
+      background-color: #428bca;
+      }
+
+
+      /*
+      * Main content
+      */
+
+      .main {
+      padding: 20px;
+      }
+      @media (min-width: 768px) {
+      .main {
+        padding-right: 40px;
+        padding-left: 40px;
+      }
+      }
+      .main .page-header {
+      margin-top: 0;
+      }
+
+
+      /*
+      * Placeholder dashboard ideas
+      */
+
+      .placeholders {
+      margin-bottom: 30px;
+      text-align: center;
+      }
+      .placeholders h4 {
+      margin-bottom: 0;
+      }
+      .placeholder {
+      margin-bottom: 20px;
+      }
+      .placeholder img {
+      display: inline-block;
+      border-radius: 50%;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Adyen Go Api Playground</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://github.com/zhutik/adyen-api-go">Github</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li role="presentation" class="active">
+              <a role="tab" data-toggle="tab" aria-controls="autorize_encrypted" href="#autorize_encrypted">Authorize (Encrypted)</a>
+            </li>
+            <li role="presentation">
+              <a role="tab" data-toggle="tab" aria-controls="autorize" href="#autorize">Authorize</a>
+            </li>
+            <li role="presentation">
+              <a role="tab" data-toggle="tab" aria-controls="capture" href="#capture">Capture</a>
+            </li>
+            <li role="presentation">
+              <a role="tab" data-toggle="tab" aria-controls="cancel" href="#cancel">Cancel</a>
+            </li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a target="_blank" href="https://github.com/zhutik/adyen-api-go">Github</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+          <div class="tab-content col-md-6">
+            <div role="tabpanel" class="tab-pane fade in active" id="autorize_encrypted">
+              {{template "authorise_encypted" . }}
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="autorize">
+              {{template "authorise" . }}
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="capture">
+              {{template "capture" . }}
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="cancel">
+              {{template "cancel" . }}
+            </div>
+          </div>
+
+          <div class="tab-content col-md-5 col-md-offset-1">
+            <h2>Response:</h2>
+            <pre class="hide" id="code-response"><code class="js"></code></pre>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous">
+    </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+      integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+      crossorigin="anonymous">
+    </script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+    <script type="text/javascript" src="{{ .EncURL }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var responseArea = $('#code-response code');
+            hljs.configure({useBR: true});
+
+            var responseHandler = function(response) {
+              responseArea.html(JSON.stringify(response));
+              responseArea.parent().removeClass('hide');
+              responseArea.each(function(i, block) {
+                  hljs.highlightBlock(block);
+              });
+            }
+
+            // The form element to encrypt.
+            var form    = document.getElementById('adyen-encrypted-form');
+            // See adyen.encrypt.simple.html for details on the options to use
+            var options = {};
+
+            var encryptedBlobFieldName = "adyen-encrypted-data";
+
+            options.name = encryptedBlobFieldName;
+            options.onsubmit = function(e) {
+                var encryptedData = form.elements[encryptedBlobFieldName].value;
+                $('#adyen-encrypted-form').ajaxSubmit(responseHandler);
+
+                e.preventDefault();
+            };
+
+            // Create the form.
+            // Note that the method is on the Adyen object, not the adyen.encrypt object.
+            adyen.createEncryptedForm( form, options);
+
+            $('#adyen-cancel-form').ajaxForm(responseHandler);
+            $('#adyen-capture-form').ajaxForm(responseHandler);
+            $('#adyen-card-form').ajaxForm(responseHandler);
+        });
+
+    </script>
+  </body>
+</html>
+{{end}}
