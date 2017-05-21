@@ -1,42 +1,47 @@
 {{define "authorise_encypted"}}
-<h2>Adyen Perform Authorise (Encrypted)</h2>
-<br />
-<form class="form-horizontal" method="POST" id="adyen-encrypted-form" action="/perform_payment">
-  <div class="form-group">
-    <label for="number" class="col-sm-4 control-label">Card Number</label>
-    <div class="col-sm-8">
-        <input type="text" id="number" class="form-control" autocomplete="off" data-encrypted-name="number" size="20">
+<div class="docs-text-styling component-title">
+  <h3>Adyen Perform Authorise (Encrypted)</h3>
+</div>
+<form method="POST" id="adyen-encrypted-form" action="/perform_payment">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
+      <input class="mdl-textfield__input" type="text" id="number" autocomplete="off" data-encrypted-name="number" size="20">
+      <label class="mdl-textfield__label" for="number">Card Number</label>
     </div>
   </div>
-  <div class="form-group">
-    <label for="holderName" class="col-sm-4 control-label">Account Holder</label>
-    <div class="col-sm-8">
-        <input type="text" id="holderName" class="form-control" autocomplete="off" data-encrypted-name="holderName" size="20">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
+      <input class="mdl-textfield__input" type="text" id="holderName" autocomplete="off" data-encrypted-name="holderName" size="20">
+      <label class="mdl-textfield__label" for="holderName">Account Holder</label>
     </div>
   </div>
-  <div class="form-group">
-    <label for="expiryMonth" class="col-sm-4 control-label">Month</label>
-    <div class="col-sm-8">
-        <input type="number" id="expiryMonth" class="form-control" autocomplete="off" data-encrypted-name="expiryMonth" size="2" maxlength="2">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*?" id="expiryMonth" autocomplete="off" data-encrypted-name="expiryMonth" size="2" maxlength="2">
+      <label class="mdl-textfield__label" for="expiryMonth">Month</label>
+      <span class="mdl-textfield__error">Month should be numberic (2 digits)</span>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*?" id="expiryYear" autocomplete="off" data-encrypted-name="expiryYear" size="4" maxlength="4">
+      <label class="mdl-textfield__label" for="expiryYear">Year</label>
+      <span class="mdl-textfield__error">Year should be numberic (4 digits)</span>
     </div>
   </div>
-  <div class="form-group">
-    <label for="expiryYear" class="col-sm-4 control-label">Year</label>
-    <div class="col-sm-8">
-        <input type="number" id="expiryYear" class="form-control" autocomplete="off" data-encrypted-name="expiryYear" size="4" maxlength="4">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*?" id="cvc" autocomplete="off" data-encrypted-name="cvc" size="4" maxlength="4">
+      <label class="mdl-textfield__label" for="cvc">CSV</label>
+      <span class="mdl-textfield__error">CSV should be numberic (3-4 digits)</span>
     </div>
   </div>
-  <div class="form-group">
-    <label for="cvc" class="col-sm-4 control-label">CSV</label>
-    <div class="col-sm-8">
-        <input type="number" id="cvc" class="form-control" autocomplete="off" data-encrypted-name="cvc" size="4" maxlength="4">
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-10 col-sm-2">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--8-col"></div>
+    <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col">
       <input type="hidden" value="" name="adyen-encrypted-data" id="adyen-encrypted-data" />
       <input type="hidden" value="{{ .Time }}" data-encrypted-name="generationtime" />
-      <button type="submit" class="btn btn-default">Pay Me</button>
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        Perform payment
+      </button>
     </div>
   </div>
 </form>
