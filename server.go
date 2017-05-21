@@ -198,6 +198,15 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fmt.Println("Checking environment variables...")
+
+	if len(os.Getenv("ADYEN_USERNAME")) == 0 ||
+		len(os.Getenv("ADYEN_PASSWORD")) == 0 ||
+		len(os.Getenv("ADYEN_CLIENT_TOKEN")) == 0 ||
+		len(os.Getenv("ADYEN_ACCOUNT")) == 0 {
+		panic("Some of the required varibles are missing or empty.\nPlease make sure\nADYEN_USERNAME\nADYEN_PASSWORD\nADYEN_CLIENT_TOKEN\nADYEN_ACCOUNT\nare set as environment variables")
+	}
+
 	fmt.Println("Start listening connections on port 8080...")
 
 	http.HandleFunc("/", showForm)

@@ -110,8 +110,12 @@
       width: 100%;
       max-width: 640px;
       margin: 0 auto;
-      padding: 0 16px;
+      padding: 16px;
       border-radius: 2px;
+    }
+
+    .mdl-components__response .hljs {
+      background: inherit;
     }
 
     .hide {
@@ -181,9 +185,7 @@
           </div>
           <div class="mdl-cell mdl-cell--6-col">
             <h3>Response:</h3>
-            <pre class="mdl-components__response mdl-color--yellow-100" id="code-response">
-              <code class="js"></code>
-            </pre>
+            <pre class="mdl-components__response mdl-color--yellow-100" id="code-response"><code class="js"></code></pre>
           </div>
         </div>
       </main>
@@ -218,11 +220,11 @@
             });
 
             var responseArea = $('#code-response code');
-            hljs.configure({useBR: true});
+            //hljs.configure({useBR: true});
 
             var responseHandler = function(response) {
-              responseArea.html(JSON.stringify(response));
-              responseArea.parent().removeClass('hide');
+              responseArea.html(JSON.stringify(response, null, 4));
+              //responseArea.parent().removeClass('hide');
               responseArea.each(function(i, block) {
                   hljs.highlightBlock(block);
               });
