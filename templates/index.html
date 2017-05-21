@@ -234,6 +234,15 @@
       border-radius: 2px;
     }
 
+    .hide {
+      display: none;
+    }
+
+    .demo-layout .demo-navigation a.mdl-navigation__link.is-active {
+      color: #eceff1;
+      background-color: #00BCD4
+    }
+
     </style>
 
   </head>
@@ -261,9 +270,9 @@
             <h3>Adyen Api</h3>
           </div>
         </header>
-        <nav class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
-          <a class="mdl-navigation__link" href="#autorize_encrypted">Authorize (Encrypted)</a>
-          <a class="mdl-navigation__link" href="#autorize">Authorize</a>
+        <nav id="tab_links" class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
+          <a class="mdl-navigation__link  is-active" href="#autorize_encrypted">Authorize (Encrypted)</a>
+          <a class="mdl-navigation__link" href="#authorise">Authorize</a>
           <a class="mdl-navigation__link" href="#capture">Capture</a>
           <a class="mdl-navigation__link" href="#cancel">Cancel</a>
           <div class="mdl-layout-spacer"></div>
@@ -276,8 +285,19 @@
 
       <main class="forms-content mdl-layout__content mdl-color--grey-100">
         <div class="mdl-grid">
-          <div id="autorize_encrypted" class="mdl-cell mdl-cell--6-col">
-            {{template "authorise_encypted" . }}
+          <div id="tab_content" class="mdl-cell mdl-cell--6-col">
+            <div id="autorize_encrypted" class="tab is_active">
+              {{template "authorise_encypted" . }}
+            </div>
+            <div id="authorise" class="tab hide">
+              {{template "authorise" . }}
+            </div>
+            <div id="capture" class="tab hide">
+              {{template "capture" . }}
+            </div>
+            <div id="cancel" class="tab hide">
+              {{template "cancel" . }}
+            </div>
           </div>
           <div class="mdl-cell mdl-cell--6-col">
             <h3>Response:</h3>
@@ -370,6 +390,21 @@
     <script type="text/javascript" src="{{ .EncURL }}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            $('#tab_links a').click(function(e) {
+              var target = $(this).attr('href');
+
+              $('#tab_content .tab:visible').addClass('hide')
+                  .removeClass('is_active')
+
+              $targetTab = $(target);
+              $targetTab.toggleClass('is_active').toggleClass('hide');
+
+              $('#tab_links a').removeClass('is-active');
+              $(this).addClass('is-active');
+
+              e.preventDefault();
+            });
+
             var responseArea = $('#code-response code');
             hljs.configure({useBR: true});
 
