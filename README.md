@@ -19,6 +19,16 @@ $ export ADYEN_PASSWORD="YOUR_API_PASSWORD"
 $ export ADYEN_ACCOUNT="YOUR_MERCHANT_ACCOUNT"
 ```
 
+Or, modify ```.default.env.template```
+
+```
+cp .default.env.template .default.env
+
+# modify/change .default.env and put your credentials
+
+source .default.env
+```
+
 Settings explanation:
 * ADYEN_CLIENT_TOKEN - Library token in Adyen, used to load external JS file from Adyen to validate Credit Card information
 * ADYEN_USERNAME - Adyen API username, usually starts with ws@
