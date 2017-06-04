@@ -20,36 +20,15 @@
     html, body {
       font-family: 'Roboto', 'Helvetica', sans-serif;
     }
-    .demo-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 24px;
-    }
-    .demo-layout .mdl-layout__header .mdl-layout__drawer-button {
-      color: rgba(0, 0, 0, 0.54);
-    }
-    .mdl-layout__drawer .avatar {
-      margin-bottom: 16px;
-    }
+
     .demo-drawer {
       border: none;
     }
-    /* iOS Safari specific workaround */
-    .demo-drawer .mdl-menu__container {
-      z-index: -1;
-    }
+
     .demo-drawer .demo-navigation {
       z-index: -2;
     }
-    /* END iOS Safari specific workaround */
-    .demo-drawer .mdl-menu .mdl-menu__item {
-      display: -webkit-flex;
-      display: -ms-flexbox;
-      display: flex;
-      -webkit-align-items: center;
-          -ms-flex-align: center;
-              align-items: center;
-    }
+
     .demo-drawer-header {
       box-sizing: border-box;
       display: -webkit-flex;
@@ -93,10 +72,6 @@
       margin-right: 32px;
     }
 
-    .demo-content {
-      max-width: 1080px;
-    }
-
     .forms-content {
       padding-left: 22px;
     }
@@ -116,6 +91,10 @@
 
     .mdl-components__response .hljs {
       background: inherit;
+    }
+
+    .mdl-components__response .hljs-string {
+      color: #444444
     }
 
     .hide {
@@ -203,6 +182,9 @@
     <script type="text/javascript">
         $(document).ready(function() {
 
+            var responseContainer = $('#code-response');
+            var responseArea = $('code', responseContainer);
+
             // @TODO: find better way to work with navigation/tabs in framework
             $('#tab_links a').click(function(e) {
               var target = $(this).attr('href');
@@ -210,25 +192,42 @@
               $('#tab_content .tab:visible').addClass('hide')
                   .removeClass('is_active')
 
-              $targetTab = $(target);
-              $targetTab.toggleClass('is_active').toggleClass('hide');
+              $(target).toggleClass('is_active').toggleClass('hide');
 
               $('#tab_links a').removeClass('is-active');
               $(this).addClass('is-active');
 
+                responseContainer.addClass('mdl-color--yellow-100')
+                    .removeClass('mdl-color--red-200')
+                    .removeClass('mdl-color--green-200');
+
+                responseArea.html('');
+
               e.preventDefault();
             });
 
-            var responseArea = $('#code-response code');
-            //hljs.configure({useBR: true});
 
             var responseHandler = function(response) {
-              responseArea.html(JSON.stringify(response, null, 4));
-              //responseArea.parent().removeClass('hide');
-              responseArea.each(function(i, block) {
-                  hljs.highlightBlock(block);
-              });
-            }
+                responseContainer.removeClass('mdl-color--yellow-100')
+                    .removeClass('mdl-color--red-200')
+                    .addClass('mdl-color--green-200');
+
+                responseArea.html(JSON.stringify(response, null, 4));
+                responseArea.each(function(i, block) {
+                    hljs.highlightBlock(block);
+                });
+            };
+
+            var ajaxFormOptions = {
+                success : responseHandler,
+                error : function (response) {
+                    responseContainer.removeClass('mdl-color--yellow-100')
+                        .removeClass('mdl-color--green-200')
+                        .addClass('mdl-color--red-200');
+
+                    responseArea.html(response.responseText)
+                }
+            };
 
             // The form element to encrypt.
             var form    = document.getElementById('adyen-encrypted-form');
@@ -249,9 +248,9 @@
             // Note that the method is on the Adyen object, not the adyen.encrypt object.
             adyen.createEncryptedForm( form, options);
 
-            $('#adyen-cancel-form').ajaxForm(responseHandler);
-            $('#adyen-capture-form').ajaxForm(responseHandler);
-            $('#adyen-card-form').ajaxForm(responseHandler);
+            $('#adyen-cancel-form').ajaxForm(ajaxFormOptions);
+            $('#adyen-capture-form').ajaxForm(ajaxFormOptions);
+            $('#adyen-card-form').ajaxForm(ajaxFormOptions);
         });
 
     </script>

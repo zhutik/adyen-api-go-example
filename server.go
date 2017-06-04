@@ -142,7 +142,7 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 	amount, err := strconv.ParseFloat(r.Form.Get("amount"), 32)
 
 	if err != nil {
-		fmt.Fprintf(w, "<h1>Failed! Can not convert amount to float</h1>")
+		http.Error(w, "Failed! Can not convert amount to float", http.StatusInternalServerError)
 		return
 	}
 
