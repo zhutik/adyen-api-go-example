@@ -6,6 +6,8 @@
 go get github.com/zhutik/adyen-api-go
 ```
 
+![Alt text](./screenshots/authorize.png "Playground example")
+
 ## To run example
 
 ### Expose your settings for Adyen API configuration.
