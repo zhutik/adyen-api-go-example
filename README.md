@@ -8,7 +8,7 @@ go get github.com/zhutik/adyen-api-go
 
 ![Alt text](./screenshots/authorize.png "Playground example")
 
-## To run example
+## Configuration
 
 ### Expose your settings for Adyen API configuration.
 
@@ -37,9 +37,29 @@ Settings explanation:
 * ADYEN_PASSWORD - Adyen API password for username
 * ADYEN_ACCOUNT - Selected Merchant Account
 
-### Run example application
+## Run with Docker-compose
+
+Note: Expose your configuration (as shown above)
+
 ```
-$ go run server.go
+$ docker-composer up
+
+# or 
+
+$ docker-composdr up -d
+```
+
+Open ```http://localhost:8080``` in your browser
+
+
+## Run example without Docker
+
+```
+# Install dependencies
+$ go get -d -v ./...
+$ go install -v ./...
+
+$ go run main.go
 ```
 
 ### Perform payments

@@ -1,0 +1,14 @@
+version: '3'
+services:
+  golang:
+    build: .
+    image: golang:1.8
+    volumes:
+      - .:/go/src/app
+    environment:
+      - ADYEN_USERNAME=${ADYEN_USERNAME}
+      - ADYEN_PASSWORD=${ADYEN_PASSWORD}
+      - ADYEN_CLIENT_TOKEN=${ADYEN_CLIENT_TOKEN}
+      - ADYEN_ACCOUNT=${ADYEN_ACCOUNT}
+    ports:
+      - 8080:8080

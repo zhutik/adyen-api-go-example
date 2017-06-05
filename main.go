@@ -207,11 +207,17 @@ func main() {
 		panic("Some of the required varibles are missing or empty.\nPlease make sure\nADYEN_USERNAME\nADYEN_PASSWORD\nADYEN_CLIENT_TOKEN\nADYEN_ACCOUNT\nare set as environment variables")
 	}
 
-	fmt.Println("Start listening connections on port 8080...")
+	port := 8080
+
+	if len(os.Getenv("APPLICATION_PORT")) != 0 {
+		port, _ = strconv.Atoi(os.Getenv("APPLICATION_PORT"))
+	}
+
+	fmt.Println(fmt.Sprintf("Start listening connections on port %d...", port))
 
 	http.HandleFunc("/", showForm)
 	http.HandleFunc("/perform_payment", performPayment)
 	http.HandleFunc("/perform_capture", performCapture)
 	http.HandleFunc("/perform_cancel", performCancel)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
