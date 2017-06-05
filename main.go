@@ -10,15 +10,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	adyen "github.com/zhutik/adyen-api-go"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-
-	adyen "github.com/zhutik/adyen-api-go"
 )
 
 // TempateConfig for HTML template
@@ -26,6 +26,8 @@ type TempateConfig struct {
 	EncURL string
 	Time   string
 }
+
+var Logger *log.Logger
 
 func randInt(min int, max int) int {
 	return min + rand.Intn(max-min)
@@ -37,6 +39,23 @@ func randomString(l int) string {
 		bytes[i] = byte(randInt(65, 90))
 	}
 	return string(bytes)
+}
+
+// initAdyen init Adyen API instance
+func initAdyen() *adyen.Adyen {
+	instance := adyen.New(
+		os.Getenv("ADYEN_USERNAME"),
+		os.Getenv("ADYEN_PASSWORD"),
+		os.Getenv("ADYEN_CLIENT_TOKEN"),
+		os.Getenv("ADYEN_ACCOUNT"),
+	)
+
+	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+	instance.SetCurrency("EUR")
+	instance.AttachLogger(Logger)
+
+	return instance
 }
 
 /**
@@ -69,14 +88,7 @@ func showForm(w http.ResponseWriter, r *http.Request) {
  * Handle post request and perform payment authosization
  */
 func performPayment(w http.ResponseWriter, r *http.Request) {
-	instance := adyen.New(
-		os.Getenv("ADYEN_USERNAME"),
-		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
-	)
-
-	instance.SetCurrency("EUR")
+	instance := initAdyen()
 
 	r.ParseForm()
 
@@ -128,14 +140,7 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 }
 
 func performCapture(w http.ResponseWriter, r *http.Request) {
-	instance := adyen.New(
-		os.Getenv("ADYEN_USERNAME"),
-		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
-	)
-
-	instance.SetCurrency("EUR")
+	instance := initAdyen()
 
 	r.ParseForm()
 
@@ -167,14 +172,7 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 }
 
 func performCancel(w http.ResponseWriter, r *http.Request) {
-	instance := adyen.New(
-		os.Getenv("ADYEN_USERNAME"),
-		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
-	)
-
-	instance.SetCurrency("EUR")
+	instance := initAdyen()
 
 	r.ParseForm()
 
