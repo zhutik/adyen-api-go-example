@@ -1,4 +1,4 @@
-# [WIP] Adyen API for Go Example Playgroup
+# [WIP] Adyen API for Go Example Playground
 
 ## Install
 
@@ -8,11 +8,23 @@ go get github.com/zhutik/adyen-api-go
 
 ![Alt text](./screenshots/authorize.png "Playground example")
 
+## Supported API Calls
+* Authorize
+* Authorize encrypted (default)
+* Capture
+* Cancel
+
+## Next
+* Refund
+* Refund or Cancel
+* Notifications
+
+
 ## Configuration
 
 ### Expose your settings for Adyen API configuration.
 
-```server.go``` script will use those variables to communicate with API
+```main.go``` script will use those variables to communicate with API
 
 ```
 $ export ADYEN_CLIENT_TOKEN="YOUR_ADYEN_CLIENT_TOKEN"

@@ -44,6 +44,7 @@ func randomString(l int) string {
 // initAdyen init Adyen API instance
 func initAdyen() *adyen.Adyen {
 	instance := adyen.New(
+		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
 		os.Getenv("ADYEN_CLIENT_TOKEN"),
@@ -63,6 +64,7 @@ func initAdyen() *adyen.Adyen {
  */
 func showForm(w http.ResponseWriter, r *http.Request) {
 	instance := adyen.New(
+		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
 		os.Getenv("ADYEN_CLIENT_TOKEN"),
