@@ -49,6 +49,19 @@ Settings explanation:
 * ADYEN_PASSWORD - Adyen API password for username
 * ADYEN_ACCOUNT - Selected Merchant Account
 
+## Hosted Payment Pages
+
+![Alt text](./screenshots/hosted_payment_methods.png "Playground example")
+
+update your configuration and make sure you specify additional parameters
+
+```
+# API settings for Adyen Hosted Payment pages
+$ export ADYEN_HMAC="YOUR_HMAC_KEY"
+$ export ADYEN_SKINCODE="YOUR_SKINCODE_ID"
+$ export ADYEN_SHOPPER_LOCALE="YOUR_SHOPPER_LOCALE"
+```
+
 ## Run with Docker-compose
 
 Note: Expose your configuration (as shown above)
