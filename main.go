@@ -266,6 +266,7 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("Start listening connections on port %d...", port))
 
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", showForm)
 	http.HandleFunc("/perform_payment", performPayment)
 	http.HandleFunc("/perform_capture", performCapture)
