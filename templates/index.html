@@ -198,6 +198,14 @@
 
                 // update visual elements that were added
                 componentHandler.upgradeDom()
+            }).fail(function (error) {
+                var responseContainer = $('#code-response');
+                var responseArea = $('code', responseContainer);
+                responseContainer.removeClass('mdl-color--yellow-100')
+                    .removeClass('mdl-color--green-200')
+                    .addClass('mdl-color--red-200');
+
+                responseArea.html(error.responseText)
             });
         }
 
