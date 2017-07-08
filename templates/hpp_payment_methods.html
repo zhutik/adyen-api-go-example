@@ -1,0 +1,20 @@
+{{define "hpp_payment_methods"}}
+    <form>
+        <ul class="mdl-list payment-methods-list">
+        {{range $key, $paymentMethod := .PaymentMethods }}
+            <li class="mdl-list__item">
+                <span class="mdl-list__item-primary-content">
+                    <img class="mdl-list__item-avatar" src="{{$paymentMethod.Logos.Normal}}" alt="{{$paymentMethod.Name}}" />
+                    {{$paymentMethod.Name}}
+                </span>
+                <span class="mdl-list__item-secondary-action">
+                    <label class="demo-list-radio mdl-radio mdl-js-radio mdl-js-ripple-effect" for="list-option-{{$key}}">
+                        <input type="radio" id="list-option-{{$key}}" class="mdl-radio__button" name="options" value="1" />
+                    </label>
+                </span>
+            </li>
+        {{end}}
+        </ul>
+    </form>
+{{end}}
+

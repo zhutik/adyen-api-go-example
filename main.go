@@ -59,6 +59,26 @@ func initAdyen() *adyen.Adyen {
 	return instance
 }
 
+func initAdyenHPP() *adyen.Adyen {
+	instance := adyen.NewWithHPP(
+		adyen.Testing,
+		os.Getenv("ADYEN_USERNAME"),
+		os.Getenv("ADYEN_PASSWORD"),
+		os.Getenv("ADYEN_CLIENT_TOKEN"),
+		os.Getenv("ADYEN_ACCOUNT"),
+		os.Getenv("ADYEN_HMAC"),
+		os.Getenv("ADYEN_SKINCODE"),
+		os.Getenv("ADYEN_SHOPPER_LOCALE"),
+	)
+
+	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+	instance.SetCurrency("EUR")
+	instance.AttachLogger(Logger)
+
+	return instance
+}
+
 /**
  * Show Adyen Payment form
  */
@@ -197,6 +217,37 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
+	instance := initAdyenHPP()
+
+	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
+
+	req := &adyen.DirectoryLookupRequest{
+		CurrencyCode:      "EUR",
+		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		PaymentAmount:     1000,
+		SkinCode:          "sgOgVcKV",
+		MerchantReference: "DE-100" + randomString(6),
+		SessionsValidity:  timeIn.Format(time.RFC3339),
+	}
+
+	g, err := instance.Payment().DirectoryLookup(req)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	cwd, _ := os.Getwd()
+	t := template.Must(template.ParseGlob(filepath.Join(cwd, "./templates/*")))
+	err = t.ExecuteTemplate(w, "hpp_payment_methods", g)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func main() {
 	fmt.Println("Checking environment variables...")
 
@@ -219,5 +270,7 @@ func main() {
 	http.HandleFunc("/perform_payment", performPayment)
 	http.HandleFunc("/perform_capture", performCapture)
 	http.HandleFunc("/perform_cancel", performCancel)
+	http.HandleFunc("/perform_lookup", performDirectoryLookup)
+
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }

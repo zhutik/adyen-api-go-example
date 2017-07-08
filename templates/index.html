@@ -106,6 +106,14 @@
       background-color: #00BCD4
     }
 
+    .payment-methods-list {
+        width: 450px;
+    }
+
+    .demo-list-radio {
+        display: inline;
+    }
+
     </style>
 
   </head>
@@ -138,6 +146,7 @@
           <a class="mdl-navigation__link" href="#authorise">Authorize</a>
           <a class="mdl-navigation__link" href="#capture">Capture</a>
           <a class="mdl-navigation__link" href="#cancel">Cancel</a>
+          <a class="mdl-navigation__link" data-on-load="directoryLookup" href="#hpp">HPP Methods</a>
           <div class="mdl-layout-spacer"></div>
           <a target="_blank" class="mdl-navigation__link" href="https://github.com/zhutik/adyen-api-go">
             <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>
@@ -161,6 +170,9 @@
             <div id="cancel" class="tab hide">
               {{template "cancel" . }}
             </div>
+            <div id="hpp" class="tab hide">
+              {{template "hpp" . }}
+            </div>
           </div>
           <div class="mdl-cell mdl-cell--6-col">
             <h3>Response:</h3>
@@ -180,22 +192,30 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
     <script type="text/javascript" src="{{ .EncURL }}"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
+        function directoryLookup() {
+            $.get("/perform_lookup", function (response) {
+                $('.lookup-results').html(response);
 
+                // update visual elements that were added
+                componentHandler.upgradeDom()
+            });
+        }
+
+        $(document).ready(function () {
             var responseContainer = $('#code-response');
             var responseArea = $('code', responseContainer);
 
             // @TODO: find better way to work with navigation/tabs in framework
-            $('#tab_links a').click(function(e) {
-              var target = $(this).attr('href');
+            $('#tab_links a').click(function (e) {
+                var target = $(this).attr('href');
 
-              $('#tab_content .tab:visible').addClass('hide')
-                  .removeClass('is_active')
+                $('#tab_content .tab:visible').addClass('hide')
+                    .removeClass('is_active')
 
-              $(target).toggleClass('is_active').toggleClass('hide');
+                $(target).toggleClass('is_active').toggleClass('hide');
 
-              $('#tab_links a').removeClass('is-active');
-              $(this).addClass('is-active');
+                $('#tab_links a').removeClass('is-active');
+                $(this).addClass('is-active');
 
                 responseContainer.addClass('mdl-color--yellow-100')
                     .removeClass('mdl-color--red-200')
@@ -203,24 +223,31 @@
 
                 responseArea.html('');
 
-              e.preventDefault();
+                if ($(this).attr('data-on-load')) {
+                    var func = window[$(this).attr('data-on-load')];
+                    if (typeof func === 'function') {
+                        func();
+                    }
+                }
+
+                e.preventDefault();
             });
 
 
-            var responseHandler = function(response) {
+            var responseHandler = function (response) {
                 responseContainer.removeClass('mdl-color--yellow-100')
                     .removeClass('mdl-color--red-200')
                     .addClass('mdl-color--green-200');
 
                 responseArea.html(JSON.stringify(response, null, 4));
-                responseArea.each(function(i, block) {
+                responseArea.each(function (i, block) {
                     hljs.highlightBlock(block);
                 });
             };
 
             var ajaxFormOptions = {
-                success : responseHandler,
-                error : function (response) {
+                success: responseHandler,
+                error: function (response) {
                     responseContainer.removeClass('mdl-color--yellow-100')
                         .removeClass('mdl-color--green-200')
                         .addClass('mdl-color--red-200');
@@ -230,14 +257,14 @@
             };
 
             // The form element to encrypt.
-            var form    = document.getElementById('adyen-encrypted-form');
+            var form = document.getElementById('adyen-encrypted-form');
             // See adyen.encrypt.simple.html for details on the options to use
             var options = {};
 
             var encryptedBlobFieldName = "adyen-encrypted-data";
 
             options.name = encryptedBlobFieldName;
-            options.onsubmit = function(e) {
+            options.onsubmit = function (e) {
                 var encryptedData = form.elements[encryptedBlobFieldName].value;
                 $('#adyen-encrypted-form').ajaxSubmit(responseHandler);
 
@@ -246,13 +273,12 @@
 
             // Create the form.
             // Note that the method is on the Adyen object, not the adyen.encrypt object.
-            adyen.createEncryptedForm( form, options);
+            adyen.createEncryptedForm(form, options);
 
             $('#adyen-cancel-form').ajaxForm(ajaxFormOptions);
             $('#adyen-capture-form').ajaxForm(ajaxFormOptions);
             $('#adyen-card-form').ajaxForm(ajaxFormOptions);
         });
-
     </script>
   </body>
 </html>

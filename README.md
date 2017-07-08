@@ -54,11 +54,11 @@ Settings explanation:
 Note: Expose your configuration (as shown above)
 
 ```
-$ docker-composer up
+$ docker-compose up
 
 # or 
 
-$ docker-composdr up -d
+$ docker-compose up -d
 ```
 
 Open ```http://localhost:8080``` in your browser
