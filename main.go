@@ -21,8 +21,8 @@ import (
 	"time"
 )
 
-// TempateConfig for HTML template
-type TempateConfig struct {
+// TemplateConfig for HTML template
+type TemplateConfig struct {
 	EncURL string
 	Time   string
 }
@@ -93,7 +93,7 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	cwd, _ := os.Getwd()
 
-	config := TempateConfig{
+	config := TemplateConfig{
 		EncURL: instance.ClientURL(),
 		Time:   now.Format(time.RFC3339),
 	}
@@ -229,6 +229,7 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 		SkinCode:          "sgOgVcKV",
 		MerchantReference: "DE-100" + randomString(6),
 		SessionsValidity:  timeIn.Format(time.RFC3339),
+		CountryCode:       "NL",
 	}
 
 	g, err := instance.Payment().DirectoryLookup(req)
@@ -246,6 +247,40 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func performHpp(w http.ResponseWriter, r *http.Request) {
+	instance := initAdyenHPP()
+
+	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
+
+	// 5 days
+	shipTime := time.Now().Local().Add(time.Hour * 24 * time.Duration(5))
+
+	req := &adyen.SkipHppRequest{
+		MerchantReference: "DE-100" + randomString(6),
+		PaymentAmount:     1000,
+		CurrencyCode:      instance.Currency,
+		ShipBeforeDate:    shipTime.Format(time.RFC3339),
+		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
+		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		ShopperLocale:     "en_GB",
+		SessionsValidity:  timeIn.Format(time.RFC3339),
+		CountryCode:       "NL",
+		BrandCode:         "ideal",
+		IssuerId:          "1121",
+	}
+
+	url, err := instance.Payment().GetHPPRedirectURL(req)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//w.Write([]byte(url))
+
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func main() {
@@ -272,6 +307,7 @@ func main() {
 	http.HandleFunc("/perform_capture", performCapture)
 	http.HandleFunc("/perform_cancel", performCancel)
 	http.HandleFunc("/perform_lookup", performDirectoryLookup)
+	http.HandleFunc("/perform_hpp", performHpp)
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
