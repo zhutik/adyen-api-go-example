@@ -3,6 +3,17 @@
 
 <form method="POST" id="adyen-encrypted-form" action="/perform_payment">
   <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" value="10.99" name="amount" id="amount" pattern="-?[0-9]*(\.[0-9]+)?">
+      <label class="mdl-textfield__label" for="amount">Amount</label>
+      <span class="mdl-textfield__error">Input is not a number!</span>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" value="DE-1234567" name="reference" id="reference">
+      <label class="mdl-textfield__label" for="reference">Reference (Order Number)</label>
+    </div>
+  </div>
+  <div class="mdl-grid">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
       <input class="mdl-textfield__input" type="text" id="number" autocomplete="off" data-encrypted-name="number" size="20">
       <label class="mdl-textfield__label" for="number">Card Number</label>

@@ -3,6 +3,11 @@
 	export ADYEN_USERNAME="YOUR_ADYEN_API_USERNAME"
 	export ADYEN_PASSWORD="YOUR_API_PASSWORD"
 	export ADYEN_ACCOUNT="YOUR_MERCHANT_ACCOUNT"
+
+	# API settings for Adyen Hosted Payment pages
+	export ADYEN_HMAC="YOUR_HMAC_KEY"
+	export ADYEN_SKINCODE="YOUR_SKIN_CODE"
+	export ADYEN_SHOPPER_LOCALE="en_GB"
 */
 
 package main
@@ -10,7 +15,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	adyen "github.com/zhutik/adyen-api-go"
+	"github.com/gorilla/mux"
+	"github.com/zhutik/adyen-api-go"
 	"html/template"
 	"log"
 	"math/rand"
@@ -119,13 +125,25 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 	var g *adyen.AuthoriseResponse
 	var err error
 
+	amount, err := strconv.ParseFloat(r.Form.Get("amount"), 32)
+
+	if err != nil {
+		http.Error(w, "Failed! Can not convert amount to float", http.StatusInternalServerError)
+		return
+	}
+
+	reference := r.Form.Get("reference")
+
+	// multiple value by 100, as specified in Adyen documentation
+	adyenAmount := float32(amount) * 100
+
 	// Form was submited with encrypted data
 	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
 		req := &adyen.AuthoriseEncrypted{
-			Amount:          &adyen.Amount{Value: 1000, Currency: instance.Currency},
+			Amount:          &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
 			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
 			AdditionalData:  &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
-			Reference:       "DE-100" + randomString(6), // order number or some bussiness reference
+			Reference:       reference, // order number or some business reference
 		}
 
 		g, err = instance.Payment().AuthoriseEncrypted(req)
@@ -142,9 +160,9 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 				HolderName:  r.Form.Get("holderName"),
 				Cvc:         cvc,
 			},
-			Amount:          &adyen.Amount{Value: 1000, Currency: instance.Currency},
+			Amount:          &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
 			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
-			Reference:       "DE-100" + randomString(6), // order number or some bussiness reference
+			Reference:       reference, // order number or some business reference
 		}
 
 		g, err = instance.Payment().Authorise(req)
@@ -268,7 +286,7 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 		SessionsValidity:  timeIn.Format(time.RFC3339),
 		CountryCode:       "NL",
 		BrandCode:         "ideal",
-		IssuerId:          "1121",
+		IssuerID:          "1121",
 	}
 
 	url, err := instance.Payment().GetHPPRedirectURL(req)
@@ -277,8 +295,6 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	//w.Write([]byte(url))
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -301,13 +317,23 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("Start listening connections on port %d...", port))
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", showForm)
-	http.HandleFunc("/perform_payment", performPayment)
-	http.HandleFunc("/perform_capture", performCapture)
-	http.HandleFunc("/perform_cancel", performCancel)
-	http.HandleFunc("/perform_lookup", performDirectoryLookup)
-	http.HandleFunc("/perform_hpp", performHpp)
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic("Can't read current working directory")
+	}
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", showForm)
+	r.HandleFunc("/perform_payment", performPayment)
+	r.HandleFunc("/perform_capture", performCapture)
+	r.HandleFunc("/perform_cancel", performCancel)
+	r.HandleFunc("/perform_lookup", performDirectoryLookup)
+	r.HandleFunc("/perform_hpp", performHpp)
+	s := http.StripPrefix("/static/", http.FileServer(http.Dir(cwd+"/static/")))
+	r.PathPrefix("/static/").Handler(s)
+
+	http.Handle("/", r)
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }

@@ -3,6 +3,17 @@
 
 <form method="POST" id="adyen-card-form" action="/perform_payment">
   <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" value="10.99" name="amount" id="n_amount" pattern="-?[0-9]*(\.[0-9]+)?">
+      <label class="mdl-textfield__label" for="n_amount">Amount</label>
+      <span class="mdl-textfield__error">Input is not a number!</span>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--6-col">
+      <input class="mdl-textfield__input" value="DE-1234567" name="reference" id="n_reference">
+      <label class="mdl-textfield__label" for="n_reference">Reference (Order Number)</label>
+    </div>
+  </div>
+  <div class="mdl-grid">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
       <input class="mdl-textfield__input" type="text" name="number" id="n_number" size="20">
       <label class="mdl-textfield__label" for="n_number">Card Number</label>
