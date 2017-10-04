@@ -1,0 +1,32 @@
+{{define "refund"}}
+<h3>Perform Refund</h3>
+
+<form method="POST" id="adyen-refund-form" action="/perform_refund">
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
+      <input class="mdl-textfield__input" type="text" name="original-reference" id="original-reference">
+      <label class="mdl-textfield__label" for="original-reference">Original Reference</label>
+    </div>
+  </div>
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
+      <input class="mdl-textfield__input" type="text" name="reference" id="reference">
+      <label class="mdl-textfield__label" for="reference">Order Number</label>
+    </div>
+  </div>
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--12-col">
+      <input class="mdl-textfield__input" type="text" name="amount" id="amount">
+      <label class="mdl-textfield__label" for="amount">Amount</label>
+    </div>
+  </div>
+  <div class="mdl-grid">
+    <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--8-col"></div>
+    <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col">
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        Refund
+      </button>
+    </div>
+  </div>
+</form>
+{{end}}
