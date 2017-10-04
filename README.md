@@ -64,7 +64,7 @@ $ export ADYEN_SHOPPER_LOCALE="YOUR_SHOPPER_LOCALE"
 
 ## Run with Docker-compose
 
-Note: Expose your configuration (as shown above)
+Note: Expose your configuration first (as shown above)
 
 ```
 $ docker-compose up
@@ -72,6 +72,10 @@ $ docker-compose up
 # or 
 
 $ docker-compose up -d
+
+# or
+
+$ docker run -p 8080:8080 -e ADYEN_USERNAME=${ADYEN_USERNAME} -e ADYEN_PASSWORD=${ADYEN_PASSWORD} -e ADYEN_CLIENT_TOKEN=${ADYEN_CLIENT_TOKEN} -e ADYEN_ACCOUNT=${ADYEN_ACCOUNT} -e ADYEN_HMAC=${ADYEN_HMAC} -e ADYEN_SKINCODE=${ADYEN_SKINCODE} -e ADYEN_SHOPPER_LOCALE=${ADYEN_SHOPPER_LOCALE} zhutik/adyen-api-go-example go run main.go
 ```
 
 Open ```http://localhost:8080``` in your browser
