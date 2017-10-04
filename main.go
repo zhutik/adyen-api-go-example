@@ -113,7 +113,7 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
- * Handle post request and perform payment authosization
+ * Handle post request and perform payment authorization
  */
 func performPayment(w http.ResponseWriter, r *http.Request) {
 	instance := initAdyen()
@@ -137,7 +137,7 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 	// multiple value by 100, as specified in Adyen documentation
 	adyenAmount := float32(amount) * 100
 
-	// Form was submited with encrypted data
+	// Form was submitted with encrypted data
 	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
 		req := &adyen.AuthoriseEncrypted{
 			Amount:          &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
@@ -194,8 +194,8 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 	req := &adyen.Capture{
 		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
 		MerchantAccount:    os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
-		Reference:          r.Form.Get("reference"),          // order number or some bussiness reference
-		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authosization results
+		Reference:          r.Form.Get("reference"),          // order number or some business reference
+		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization results
 	}
 
 	g, err := instance.Modification().Capture(req)
@@ -217,12 +217,44 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	req := &adyen.Cancel{
-		Reference:         r.Form.Get("reference"),          // order number or some bussiness reference
+		Reference:         r.Form.Get("reference"),          // order number or some business reference
 		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
-		OriginalReference: r.Form.Get("original-reference"), // PSP reference that came as authosization result
+		OriginalReference: r.Form.Get("original-reference"), // PSP reference that came as authorization result
 	}
 
 	g, err := instance.Modification().Cancel(req)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(g)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
+
+func performRefund(w http.ResponseWriter, r *http.Request) {
+	instance := initAdyen()
+
+	r.ParseForm()
+
+	amount, err := strconv.ParseFloat(r.Form.Get("amount"), 32)
+
+	if err != nil {
+		http.Error(w, "Failed! Can not convert amount to float", http.StatusInternalServerError)
+		return
+	}
+
+	req := &adyen.Refund{
+		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
+		Reference:          r.Form.Get("reference"),          // order number or some business reference
+		MerchantAccount:    os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
+		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization result
+	}
+
+	g, err := instance.Modification().Refund(req)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -244,7 +276,7 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 		CurrencyCode:      "EUR",
 		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
 		PaymentAmount:     1000,
-		SkinCode:          "sgOgVcKV",
+		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
 		MerchantReference: "DE-100" + randomString(6),
 		SessionsValidity:  timeIn.Format(time.RFC3339),
 		CountryCode:       "NL",
@@ -330,6 +362,7 @@ func main() {
 	r.HandleFunc("/perform_cancel", performCancel)
 	r.HandleFunc("/perform_lookup", performDirectoryLookup)
 	r.HandleFunc("/perform_hpp", performHpp)
+	r.HandleFunc("/perform_refund", performRefund)
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir(cwd+"/static/")))
 	r.PathPrefix("/static/").Handler(s)
 

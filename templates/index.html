@@ -45,16 +45,17 @@
           </div>
         </header>
         <nav id="tab_links" class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
-          <a class="mdl-navigation__link  is-active" href="#autorize_encrypted">Authorize (Encrypted)</a>
-          <a class="mdl-navigation__link" href="#authorise">Authorize</a>
-          <a class="mdl-navigation__link" href="#capture">Capture</a>
-          <a class="mdl-navigation__link" href="#cancel">Cancel</a>
-          <a class="mdl-navigation__link" data-on-load="directoryLookup" href="#hpp">HPP Methods</a>
-          <div class="mdl-layout-spacer"></div>
-          <a target="_blank" class="mdl-navigation__link" href="https://github.com/zhutik/adyen-api-go">
-            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>
-            <span class="visuallyhidden">Help</span>
-          </a>
+            <a class="mdl-navigation__link  is-active" href="#autorize_encrypted">Authorize (Encrypted)</a>
+            <a class="mdl-navigation__link" href="#authorise">Authorize</a>
+            <a class="mdl-navigation__link" href="#capture">Capture</a>
+            <a class="mdl-navigation__link" href="#cancel">Cancel</a>
+            <a class="mdl-navigation__link" href="#refund">Refund</a>
+            <a class="mdl-navigation__link" data-on-load="directoryLookup" href="#hpp">HPP Methods</a>
+            <div class="mdl-layout-spacer"></div>
+            <a target="_blank" class="mdl-navigation__link" href="https://github.com/zhutik/adyen-api-go">
+                <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>
+                <span class="visuallyhidden">Help</span>
+            </a>
         </nav>
       </div>
 
@@ -72,6 +73,9 @@
             </div>
             <div id="cancel" class="tab hide">
               {{template "cancel" . }}
+            </div>
+            <div id="refund" class="tab hide">
+              {{template "refund" . }}
             </div>
             <div id="hpp" class="tab hide">
               {{template "hpp" . }}
@@ -167,6 +171,7 @@
 
             $('#adyen-cancel-form').ajaxForm(ajaxFormOptions);
             $('#adyen-capture-form').ajaxForm(ajaxFormOptions);
+            $('#adyen-refund-form').ajaxForm(ajaxFormOptions);
             $('#adyen-card-form').ajaxForm(ajaxFormOptions);
         });
     </script>

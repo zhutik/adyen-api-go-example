@@ -13,9 +13,11 @@ go get github.com/zhutik/adyen-api-go
 * Authorize encrypted (default)
 * Capture
 * Cancel
+* Refund
+* Directory Lookup call
+* Hosted Payment Pages redirect (HPP)
 
 ## Next
-* Refund
 * Refund or Cancel
 * Notifications
 
