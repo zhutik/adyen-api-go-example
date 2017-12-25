@@ -46,7 +46,7 @@
         </header>
         <nav id="tab_links" class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
             <a class="mdl-navigation__link  is-active" href="#autorize_encrypted">Authorize (Encrypted)</a>
-            <a class="mdl-navigation__link" href="#recurring-list">Recurring Cards List</a>
+            <a class="mdl-navigation__link" href="#recurring_list">Recurring Cards List</a>
             <a class="mdl-navigation__link" href="#authorise">Authorize</a>
             <a class="mdl-navigation__link" href="#capture">Capture</a>
             <a class="mdl-navigation__link" href="#cancel">Cancel</a>
@@ -65,6 +65,9 @@
           <div id="tab_content" class="mdl-cell mdl-cell--6-col">
             <div id="autorize_encrypted" class="tab is_active">
               {{template "authorise_encypted" . }}
+            </div>
+            <div id="recurring_list" class="tab hide">
+              {{template "recurring_list" . }}
             </div>
             <div id="authorise" class="tab hide">
               {{template "authorise" . }}
@@ -174,6 +177,7 @@
             $('#adyen-capture-form').ajaxForm(ajaxFormOptions);
             $('#adyen-refund-form').ajaxForm(ajaxFormOptions);
             $('#adyen-card-form').ajaxForm(ajaxFormOptions);
+            $('#adyen-recurring-list').ajaxForm(ajaxFormOptions);
         });
     </script>
   </body>

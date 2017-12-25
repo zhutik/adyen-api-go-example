@@ -333,6 +333,29 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+func performRecurringList(w http.ResponseWriter, r *http.Request) {
+	instance := initAdyen()
+
+	r.ParseForm()
+
+	req := &adyen.RecurringDetailsRequest{
+		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		ShopperReference:  r.Form.Get("shopperReference"),
+	}
+
+	g, err := instance.Recurring().ListRecurringDetails(req)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(g)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
+
 func main() {
 	fmt.Println("Checking environment variables...")
 
@@ -365,6 +388,8 @@ func main() {
 	r.HandleFunc("/perform_lookup", performDirectoryLookup)
 	r.HandleFunc("/perform_hpp", performHpp)
 	r.HandleFunc("/perform_refund", performRefund)
+	r.HandleFunc("/perform_recurring_list", performRecurringList)
+
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir(cwd+"/static/")))
 	r.PathPrefix("/static/").Handler(s)
 
