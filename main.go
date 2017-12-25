@@ -140,29 +140,31 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 	// Form was submitted with encrypted data
 	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
 		req := &adyen.AuthoriseEncrypted{
-			Amount:          &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
-			AdditionalData:  &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
-			Reference:       reference, // order number or some business reference
+			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
+			MerchantAccount:  os.Getenv("ADYEN_ACCOUNT"),
+			AdditionalData:   &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
+			ShopperReference: r.Form.Get("shopperReference"),
+			Reference:        reference, // order number or some business reference
+		}
+
+		if len(r.Form.Get("is_recurring")) > 0 {
+			req.Recurring = &adyen.Recurring{Contract:adyen.RecurringPaymentRecurring}
 		}
 
 		g, err = instance.Payment().AuthoriseEncrypted(req)
 	} else {
-		month, _ := strconv.Atoi(r.Form.Get("expiryMonth"))
-		year, _ := strconv.Atoi(r.Form.Get("expiryYear"))
-		cvc, _ := strconv.Atoi(r.Form.Get("cvc"))
-
 		req := &adyen.Authorise{
 			Card: &adyen.Card{
-				Number:      r.Form.Get("number"),
-				ExpireMonth: month,
-				ExpireYear:  year,
-				HolderName:  r.Form.Get("holderName"),
-				Cvc:         cvc,
+				Number:       r.Form.Get("number"),
+				ExpireMonth:  r.Form.Get("expiryMonth"),
+				ExpireYear:   r.Form.Get("expiryYear"),
+				HolderName:   r.Form.Get("holderName"),
+				Cvc:          r.Form.Get("cvc"),
 			},
-			Amount:          &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount: os.Getenv("ADYEN_ACCOUNT"),
-			Reference:       reference, // order number or some business reference
+			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
+			MerchantAccount:  os.Getenv("ADYEN_ACCOUNT"),
+			Reference:        reference, // order number or some business reference
+			ShopperReference: r.Form.Get("shopperReference"),
 		}
 
 		g, err = instance.Payment().Authorise(req)
@@ -331,6 +333,29 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+func performRecurringList(w http.ResponseWriter, r *http.Request) {
+	instance := initAdyen()
+
+	r.ParseForm()
+
+	req := &adyen.RecurringDetailsRequest{
+		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		ShopperReference:  r.Form.Get("shopperReference"),
+	}
+
+	g, err := instance.Recurring().ListRecurringDetails(req)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(g)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
+
 func main() {
 	fmt.Println("Checking environment variables...")
 
@@ -363,6 +388,8 @@ func main() {
 	r.HandleFunc("/perform_lookup", performDirectoryLookup)
 	r.HandleFunc("/perform_hpp", performHpp)
 	r.HandleFunc("/perform_refund", performRefund)
+	r.HandleFunc("/perform_recurring_list", performRecurringList)
+
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir(cwd+"/static/")))
 	r.PathPrefix("/static/").Handler(s)
 
