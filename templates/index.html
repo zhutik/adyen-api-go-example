@@ -46,6 +46,7 @@
         </header>
         <nav id="tab_links" class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
             <a class="mdl-navigation__link  is-active" href="#autorize_encrypted">Authorize (Encrypted)</a>
+            <a class="mdl-navigation__link" href="#recurring-list">Recurring Cards List</a>
             <a class="mdl-navigation__link" href="#authorise">Authorize</a>
             <a class="mdl-navigation__link" href="#capture">Capture</a>
             <a class="mdl-navigation__link" href="#cancel">Cancel</a>
@@ -160,7 +161,7 @@
             options.name = encryptedBlobFieldName;
             options.onsubmit = function (e) {
                 var encryptedData = form.elements[encryptedBlobFieldName].value;
-                $('#adyen-encrypted-form').ajaxSubmit(responseHandler);
+                $('#adyen-encrypted-form').ajaxSubmit(ajaxFormOptions);
 
                 e.preventDefault();
             };
