@@ -11,6 +11,8 @@ go get github.com/zhutik/adyen-api-go
 ## Supported API Calls
 * Authorize
 * Authorize encrypted (default)
+* Save Recurring Payment
+* Recurring List (saved payment methods)
 * Capture
 * Cancel
 * Refund

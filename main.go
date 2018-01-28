@@ -15,8 +15,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/zhutik/adyen-api-go"
 	"html/template"
 	"log"
 	"math/rand"
@@ -25,6 +23,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/zhutik/adyen-api-go"
 )
 
 // TemplateConfig for HTML template
@@ -53,33 +54,29 @@ func initAdyen() *adyen.Adyen {
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
 	)
 
 	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	instance.SetCurrency("EUR")
+	instance.SetMerchantAccount(os.Getenv("ADYEN_ACCOUNT"))
 	instance.AttachLogger(Logger)
 
 	return instance
 }
 
 func initAdyenHPP() *adyen.Adyen {
-	instance := adyen.NewWithHPP(
+	instance := adyen.NewWithHMAC(
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
 		os.Getenv("ADYEN_HMAC"),
-		os.Getenv("ADYEN_SKINCODE"),
-		os.Getenv("ADYEN_SHOPPER_LOCALE"),
 	)
 
 	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	instance.SetCurrency("EUR")
+	instance.SetMerchantAccount(os.Getenv("ADYEN_ACCOUNT"))
 	instance.AttachLogger(Logger)
 
 	return instance
@@ -89,18 +86,13 @@ func initAdyenHPP() *adyen.Adyen {
  * Show Adyen Payment form
  */
 func showForm(w http.ResponseWriter, r *http.Request) {
-	instance := adyen.New(
-		adyen.Testing,
-		os.Getenv("ADYEN_USERNAME"),
-		os.Getenv("ADYEN_PASSWORD"),
-		os.Getenv("ADYEN_CLIENT_TOKEN"),
-		os.Getenv("ADYEN_ACCOUNT"),
-	)
+	instance := initAdyen()
+
 	now := time.Now()
 	cwd, _ := os.Getwd()
 
 	config := TemplateConfig{
-		EncURL: instance.ClientURL(),
+		EncURL: instance.ClientURL(os.Getenv("ADYEN_CLIENT_TOKEN")),
 		Time:   now.Format(time.RFC3339),
 	}
 
@@ -141,28 +133,28 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
 		req := &adyen.AuthoriseEncrypted{
 			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount:  os.Getenv("ADYEN_ACCOUNT"),
+			MerchantAccount:  instance.GetMerchantAccount(),
 			AdditionalData:   &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
 			ShopperReference: r.Form.Get("shopperReference"),
 			Reference:        reference, // order number or some business reference
 		}
 
 		if len(r.Form.Get("is_recurring")) > 0 {
-			req.Recurring = &adyen.Recurring{Contract:adyen.RecurringPaymentRecurring}
+			req.Recurring = &adyen.Recurring{Contract: adyen.RecurringPaymentRecurring}
 		}
 
 		g, err = instance.Payment().AuthoriseEncrypted(req)
 	} else {
 		req := &adyen.Authorise{
 			Card: &adyen.Card{
-				Number:       r.Form.Get("number"),
-				ExpireMonth:  r.Form.Get("expiryMonth"),
-				ExpireYear:   r.Form.Get("expiryYear"),
-				HolderName:   r.Form.Get("holderName"),
-				Cvc:          r.Form.Get("cvc"),
+				Number:      r.Form.Get("number"),
+				ExpireMonth: r.Form.Get("expiryMonth"),
+				ExpireYear:  r.Form.Get("expiryYear"),
+				HolderName:  r.Form.Get("holderName"),
+				Cvc:         r.Form.Get("cvc"),
 			},
 			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount:  os.Getenv("ADYEN_ACCOUNT"),
+			MerchantAccount:  instance.GetMerchantAccount(),
 			Reference:        reference, // order number or some business reference
 			ShopperReference: r.Form.Get("shopperReference"),
 		}
@@ -195,7 +187,7 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 
 	req := &adyen.Capture{
 		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
-		MerchantAccount:    os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
+		MerchantAccount:    instance.GetMerchantAccount(),    // Merchant Account setting
 		Reference:          r.Form.Get("reference"),          // order number or some business reference
 		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization results
 	}
@@ -220,7 +212,7 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 
 	req := &adyen.Cancel{
 		Reference:         r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
+		MerchantAccount:   instance.GetMerchantAccount(),    // Merchant Account setting
 		OriginalReference: r.Form.Get("original-reference"), // PSP reference that came as authorization result
 	}
 
@@ -252,7 +244,7 @@ func performRefund(w http.ResponseWriter, r *http.Request) {
 	req := &adyen.Refund{
 		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
 		Reference:          r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:    os.Getenv("ADYEN_ACCOUNT"),       // Merchant Account setting
+		MerchantAccount:    instance.GetMerchantAccount(),    // Merchant Account setting
 		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization result
 	}
 
@@ -275,8 +267,8 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
 
 	req := &adyen.DirectoryLookupRequest{
-		CurrencyCode:      "EUR",
-		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		CurrencyCode:      instance.GetCurrency(),
+		MerchantAccount:   instance.GetMerchantAccount(),
 		PaymentAmount:     1000,
 		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
 		MerchantReference: "DE-100" + randomString(6),
@@ -315,7 +307,7 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 		CurrencyCode:      instance.Currency,
 		ShipBeforeDate:    shipTime.Format(time.RFC3339),
 		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
-		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
+		MerchantAccount:   instance.GetMerchantAccount(),
 		ShopperLocale:     "en_GB",
 		SessionsValidity:  timeIn.Format(time.RFC3339),
 		CountryCode:       "NL",
@@ -339,8 +331,8 @@ func performRecurringList(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	req := &adyen.RecurringDetailsRequest{
-		MerchantAccount:   os.Getenv("ADYEN_ACCOUNT"),
-		ShopperReference:  r.Form.Get("shopperReference"),
+		MerchantAccount:  instance.GetMerchantAccount(),
+		ShopperReference: r.Form.Get("shopperReference"),
 	}
 
 	g, err := instance.Recurring().ListRecurringDetails(req)
