@@ -34,8 +34,6 @@ type TemplateConfig struct {
 	Time   string
 }
 
-var Logger *log.Logger
-
 func randInt(min int, max int) int {
 	return min + rand.Intn(max-min)
 }
@@ -50,34 +48,34 @@ func randomString(l int) string {
 
 // initAdyen init Adyen API instance
 func initAdyen() *adyen.Adyen {
+	logger := log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
+
 	instance := adyen.New(
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
+		logger,
 	)
 
-	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
-
-	instance.SetCurrency("EUR")
-	instance.SetMerchantAccount(os.Getenv("ADYEN_ACCOUNT"))
-	instance.AttachLogger(Logger)
+	instance.Currency = "EUR"
+	instance.MerchantAccount = os.Getenv("ADYEN_ACCOUNT")
 
 	return instance
 }
 
 func initAdyenHPP() *adyen.Adyen {
+	logger := log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
+
 	instance := adyen.NewWithHMAC(
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
 		os.Getenv("ADYEN_HMAC"),
+		logger,
 	)
 
-	Logger = log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
-
-	instance.SetCurrency("EUR")
-	instance.SetMerchantAccount(os.Getenv("ADYEN_ACCOUNT"))
-	instance.AttachLogger(Logger)
+	instance.Currency = "EUR"
+	instance.MerchantAccount = os.Getenv("ADYEN_ACCOUNT")
 
 	return instance
 }
@@ -133,7 +131,7 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 	if len(r.Form.Get("adyen-encrypted-data")) > 0 {
 		req := &adyen.AuthoriseEncrypted{
 			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount:  instance.GetMerchantAccount(),
+			MerchantAccount:  instance.MerchantAccount,
 			AdditionalData:   &adyen.AdditionalData{Content: r.Form.Get("adyen-encrypted-data")},
 			ShopperReference: r.Form.Get("shopperReference"),
 			Reference:        reference, // order number or some business reference
@@ -154,7 +152,7 @@ func performPayment(w http.ResponseWriter, r *http.Request) {
 				Cvc:         r.Form.Get("cvc"),
 			},
 			Amount:           &adyen.Amount{Value: adyenAmount, Currency: instance.Currency},
-			MerchantAccount:  instance.GetMerchantAccount(),
+			MerchantAccount:  instance.MerchantAccount,
 			Reference:        reference, // order number or some business reference
 			ShopperReference: r.Form.Get("shopperReference"),
 		}
@@ -187,7 +185,7 @@ func performCapture(w http.ResponseWriter, r *http.Request) {
 
 	req := &adyen.Capture{
 		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
-		MerchantAccount:    instance.GetMerchantAccount(),    // Merchant Account setting
+		MerchantAccount:    instance.MerchantAccount,         // Merchant Account setting
 		Reference:          r.Form.Get("reference"),          // order number or some business reference
 		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization results
 	}
@@ -212,7 +210,7 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 
 	req := &adyen.Cancel{
 		Reference:         r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:   instance.GetMerchantAccount(),    // Merchant Account setting
+		MerchantAccount:   instance.MerchantAccount,         // Merchant Account setting
 		OriginalReference: r.Form.Get("original-reference"), // PSP reference that came as authorization result
 	}
 
@@ -244,7 +242,7 @@ func performRefund(w http.ResponseWriter, r *http.Request) {
 	req := &adyen.Refund{
 		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
 		Reference:          r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:    instance.GetMerchantAccount(),    // Merchant Account setting
+		MerchantAccount:    instance.MerchantAccount,         // Merchant Account setting
 		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization result
 	}
 
@@ -267,8 +265,8 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
 
 	req := &adyen.DirectoryLookupRequest{
-		CurrencyCode:      instance.GetCurrency(),
-		MerchantAccount:   instance.GetMerchantAccount(),
+		CurrencyCode:      instance.Currency,
+		MerchantAccount:   instance.MerchantAccount,
 		PaymentAmount:     1000,
 		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
 		MerchantReference: "DE-100" + randomString(6),
@@ -307,7 +305,7 @@ func performHpp(w http.ResponseWriter, r *http.Request) {
 		CurrencyCode:      instance.Currency,
 		ShipBeforeDate:    shipTime.Format(time.RFC3339),
 		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
-		MerchantAccount:   instance.GetMerchantAccount(),
+		MerchantAccount:   instance.MerchantAccount,
 		ShopperLocale:     "en_GB",
 		SessionsValidity:  timeIn.Format(time.RFC3339),
 		CountryCode:       "NL",
@@ -331,7 +329,7 @@ func performRecurringList(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	req := &adyen.RecurringDetailsRequest{
-		MerchantAccount:  instance.GetMerchantAccount(),
+		MerchantAccount:  instance.MerchantAccount,
 		ShopperReference: r.Form.Get("shopperReference"),
 	}
 
