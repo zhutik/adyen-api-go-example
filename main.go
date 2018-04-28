@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -48,13 +47,10 @@ func randomString(l int) string {
 
 // initAdyen init Adyen API instance
 func initAdyen() *adyen.Adyen {
-	logger := log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
-
 	instance := adyen.New(
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
-		logger,
 	)
 
 	instance.Currency = "EUR"
@@ -64,14 +60,11 @@ func initAdyen() *adyen.Adyen {
 }
 
 func initAdyenHPP() *adyen.Adyen {
-	logger := log.New(os.Stdout, "Adyen Playground: ", log.Ldate|log.Ltime|log.Lshortfile)
-
 	instance := adyen.NewWithHMAC(
 		adyen.Testing,
 		os.Getenv("ADYEN_USERNAME"),
 		os.Getenv("ADYEN_PASSWORD"),
 		os.Getenv("ADYEN_HMAC"),
-		logger,
 	)
 
 	instance.Currency = "EUR"
