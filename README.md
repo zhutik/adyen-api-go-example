@@ -1,4 +1,9 @@
-# [WIP] Adyen API for Go Example Playground
+# Adyen API for Go Example Playground
+
+## Description
+
+Playground for https://github.com/zhutik/adyen-api-go library.
+Contains examples for different usages of library methods and setups
 
 ## Install
 
