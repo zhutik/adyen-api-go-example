@@ -101,94 +101,6 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func performCapture(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyen()
-
-	r.ParseForm()
-
-	amount, err := strconv.ParseFloat(r.Form.Get("amount"), 32)
-
-	if err != nil {
-		http.Error(w, "Failed! Can not convert amount to float", http.StatusInternalServerError)
-		return
-	}
-
-	req := &adyen.Capture{
-		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
-		MerchantAccount:    instance.MerchantAccount,         // Merchant Account setting
-		Reference:          r.Form.Get("reference"),          // order number or some business reference
-		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization results
-	}
-
-	g, err := instance.Modification().Capture(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(g)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-}
-
-func performCancel(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyen()
-
-	r.ParseForm()
-
-	req := &adyen.Cancel{
-		Reference:         r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:   instance.MerchantAccount,         // Merchant Account setting
-		OriginalReference: r.Form.Get("original-reference"), // PSP reference that came as authorization result
-	}
-
-	g, err := instance.Modification().Cancel(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(g)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-}
-
-func performRefund(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyen()
-
-	r.ParseForm()
-
-	amount, err := strconv.ParseFloat(r.Form.Get("amount"), 32)
-
-	if err != nil {
-		http.Error(w, "Failed! Can not convert amount to float", http.StatusInternalServerError)
-		return
-	}
-
-	req := &adyen.Refund{
-		ModificationAmount: &adyen.Amount{Value: float32(amount), Currency: instance.Currency},
-		Reference:          r.Form.Get("reference"),          // order number or some business reference
-		MerchantAccount:    instance.MerchantAccount,         // Merchant Account setting
-		OriginalReference:  r.Form.Get("original-reference"), // PSP reference that came as authorization result
-	}
-
-	g, err := instance.Modification().Refund(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(g)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-}
-
 func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 	instance := initAdyenHPP()
 
@@ -278,6 +190,18 @@ func performRecurringList(w http.ResponseWriter, r *http.Request) {
 
 func performPayment(w http.ResponseWriter, r *http.Request) {
 	controller.PerformPayment(initAdyen(), w, r)
+}
+
+func performCapture(w http.ResponseWriter, r *http.Request) {
+	controller.PerformCapture(initAdyen(), w, r)
+}
+
+func performCancel(w http.ResponseWriter, r *http.Request) {
+	controller.PerformCancel(initAdyen(), w, r)
+}
+
+func performRefund(w http.ResponseWriter, r *http.Request) {
+	controller.PerformRefund(initAdyen(), w, r)
 }
 
 func main() {
