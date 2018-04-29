@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -35,18 +34,6 @@ import (
 type TemplateConfig struct {
 	EncURL string
 	Time   string
-}
-
-func randInt(min int, max int) int {
-	return min + rand.Intn(max-min)
-}
-
-func randomString(l int) string {
-	bytes := make([]byte, l)
-	for i := 0; i < l; i++ {
-		bytes[i] = byte(randInt(65, 90))
-	}
-	return string(bytes)
 }
 
 // initAdyen init Adyen API instance
@@ -101,70 +88,6 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyenHPP()
-
-	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
-
-	req := &adyen.DirectoryLookupRequest{
-		CurrencyCode:      instance.Currency,
-		MerchantAccount:   instance.MerchantAccount,
-		PaymentAmount:     1000,
-		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
-		MerchantReference: "DE-100" + randomString(6),
-		SessionsValidity:  timeIn.Format(time.RFC3339),
-		CountryCode:       "NL",
-	}
-
-	g, err := instance.Payment().DirectoryLookup(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	cwd, _ := os.Getwd()
-	t := template.Must(template.ParseGlob(filepath.Join(cwd, "./templates/*")))
-	err = t.ExecuteTemplate(w, "hpp_payment_methods", g)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func performHpp(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyenHPP()
-
-	timeIn := time.Now().Local().Add(time.Minute * time.Duration(60))
-
-	// 5 days
-	shipTime := time.Now().Local().Add(time.Hour * 24 * time.Duration(5))
-
-	req := &adyen.SkipHppRequest{
-		MerchantReference: "DE-100" + randomString(6),
-		PaymentAmount:     1000,
-		CurrencyCode:      instance.Currency,
-		ShipBeforeDate:    shipTime.Format(time.RFC3339),
-		SkinCode:          os.Getenv("ADYEN_SKINCODE"),
-		MerchantAccount:   instance.MerchantAccount,
-		ShopperLocale:     "en_GB",
-		SessionsValidity:  timeIn.Format(time.RFC3339),
-		CountryCode:       "NL",
-		BrandCode:         "ideal",
-		IssuerID:          "1121",
-	}
-
-	url, err := instance.Payment().GetHPPRedirectURL(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
-
 func performRecurringList(w http.ResponseWriter, r *http.Request) {
 	instance := initAdyen()
 
@@ -202,6 +125,14 @@ func performCancel(w http.ResponseWriter, r *http.Request) {
 
 func performRefund(w http.ResponseWriter, r *http.Request) {
 	controller.PerformRefund(initAdyen(), w, r)
+}
+
+func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
+	controller.PerformDirectoryLookup(initAdyenHPP(), w, r)
+}
+
+func performHpp(w http.ResponseWriter, r *http.Request) {
+	controller.PerformHpp(initAdyenHPP(), w, r)
 }
 
 func main() {
