@@ -13,7 +13,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -88,29 +87,6 @@ func showForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func performRecurringList(w http.ResponseWriter, r *http.Request) {
-	instance := initAdyen()
-
-	r.ParseForm()
-
-	req := &adyen.RecurringDetailsRequest{
-		MerchantAccount:  instance.MerchantAccount,
-		ShopperReference: r.Form.Get("shopperReference"),
-	}
-
-	g, err := instance.Recurring().ListRecurringDetails(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(g)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-}
-
 func performPayment(w http.ResponseWriter, r *http.Request) {
 	controller.PerformPayment(initAdyen(), w, r)
 }
@@ -133,6 +109,10 @@ func performDirectoryLookup(w http.ResponseWriter, r *http.Request) {
 
 func performHpp(w http.ResponseWriter, r *http.Request) {
 	controller.PerformHpp(initAdyenHPP(), w, r)
+}
+
+func performRecurringList(w http.ResponseWriter, r *http.Request) {
+	controller.PerformRecurringList(initAdyenHPP(), w, r)
 }
 
 func main() {
