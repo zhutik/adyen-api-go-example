@@ -2,7 +2,7 @@ version: '3'
 services:
   golang:
     build: .
-    image: golang:1.8
+    image: golang:1.13
     volumes:
       - .:/go/src/app
     environment:

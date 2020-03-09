@@ -1,12 +1,12 @@
-FROM golang:1.8
+FROM golang:1.13
 
 WORKDIR /go/src/app
 
 COPY . .
 
-RUN go-wrapper download && \
-    go-wrapper install
+RUN go get -u github.com/zhutik/adyen-api-go
+RUN go build -v ./...
 
 EXPOSE 8080
 
-CMD ["go-wrapper", "run"] # ["main.go"]
+CMD ["go", "run", "main.go"]

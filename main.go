@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"time"
 
-	"./controller"
-	"./logger"
+	"github.com/zhutik/adyen-api-go-example/controller"
+	"github.com/zhutik/adyen-api-go-example/logger"
 
 	"github.com/ernesto-jimenez/httplogger"
 	"github.com/gorilla/mux"

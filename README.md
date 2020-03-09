@@ -93,10 +93,6 @@ Open ```http://localhost:8080``` in your browser
 ## Run example without Docker
 
 ```
-# Install dependencies
-$ go get -d -v ./...
-$ go install -v ./...
-
 $ go run main.go
 ```
 
